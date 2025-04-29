@@ -1,0 +1,28 @@
+<!-- @format -->
+
+# Git files
+
+.git/
+.gitignore
+
+# Node modules
+
+node_modules/
+
+# Clasp credentials
+
+.clasp.json
+
+# README and other docs
+
+README.md
+docs/
+
+# Test files
+
+test/
+\*.test.js
+
+# Local configuration
+
+\*.local.js
