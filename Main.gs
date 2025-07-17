@@ -26,6 +26,7 @@
 const SOURCE_COLUMN_1 = 'D'; //"Moji izvidi"
 const SOURCE_COLUMN_2 = 'E'; //"Avtorizirani izvidi"
 const OUTPUT_COLUMN = 'C'; //"Popravljeni izvidi"
+const FEEDBACK_COLUMN = 'F'; //"Gemini povratne informacije"
 const START_ROW = 2; //Ne spreminjaj, določi začetek delovanja programa v drugi vrstici
 
 const MENU_NAME = 'Primerjava izvidov';
@@ -38,7 +39,20 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu(MENU_NAME)
     .addItem('Izvedi batch primerjavo', MENU_FUNCTION)
+    .addItem('Odpri orodje', 'showSidebar')
     .addToUi();
+}
+
+function showSidebar() {
+  const html =
+    HtmlService.createHtmlOutputFromFile('Sidebar').setTitle(
+      'Primerjava izvidov'
+    );
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+function runDiff() {
+  processTextComparisons();
 }
 
 /**
@@ -83,6 +97,7 @@ function processTextComparisons() {
       const t1 = String(values1[i][0] || '');
       const t2 = String(values2[i][0] || '');
       const outCell = sheet.getRange(`${OUTPUT_COLUMN}${row}`);
+      const feedbackCell = sheet.getRange(`${FEEDBACK_COLUMN}${row}`);
       const existing = outCell.getValue();
 
       if (!existing && t1 && t2) {
@@ -90,6 +105,15 @@ function processTextComparisons() {
         try {
           const richText = createRichTextDiff(t1, t2);
           outCell.setRichTextValue(richText);
+          try {
+            const feedback = getGeminiFeedback(t1, t2);
+            feedbackCell.setValue(feedback);
+          } catch (feedbackErr) {
+            Logger.log(
+              `[${FN}] ERROR getGeminiFeedback@row${row}: ${feedbackErr.message}`
+            );
+            feedbackCell.setValue(`ERROR: ${feedbackErr.message}`);
+          }
 
           Logger.log(`[${FN}] Row ${row}: written rich text`);
           changedCount++;
@@ -218,4 +242,53 @@ function createRichTextDiff(text1, text2) {
 
   Logger.log(`[${FN}] End`);
   return builder.build();
+}
+
+/**
+ * Retrieve feedback from the Gemini Flash model comparing two texts.
+ */
+function getGeminiFeedback(originalText, revisedText) {
+  const FN = 'getGeminiFeedback';
+  const apiKey =
+    PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY ni nastavljen.');
+  }
+  const url =
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' +
+    apiKey;
+  const prompt =
+    'Povej v kratkih alinejah glavne razlike in ucilne tocke med naslednjima tekstoma.';
+  const payload = {
+    contents: [
+      {
+        parts: [
+          {
+            text:
+              prompt +
+              '\n\nOriginal:\n' +
+              originalText +
+              '\n\nPopravljen:\n' +
+              revisedText,
+          },
+        ],
+      },
+    ],
+  };
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+  };
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    const candidate = data.candidates && data.candidates[0];
+    const part = candidate && candidate.content && candidate.content.parts[0];
+    return part ? part.text : '';
+  } catch (e) {
+    Logger.log(`[${FN}] ERROR fetch: ${e.message}`);
+    throw e;
+  }
 }
