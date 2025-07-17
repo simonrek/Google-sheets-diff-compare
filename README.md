@@ -27,6 +27,7 @@ This script compares text between two columns in a Google Sheet and highlights t
 - **Column 3 (C):** Output column where the script places the rich text comparison results.
 - **Column 4 (D):** The original text to be compared.
 - **Column 5 (E):** The revised/latest version of the text to compare against the original.
+- **Column 6 (F):** The review feedback made by Gemini for educational and teaching purposes.
 
 **How to Use:**
 
@@ -57,4 +58,6 @@ The core text comparison logic utilizes the `diff-match-patch` library developed
 
 This project's specific Apps Script code is licensed under the [Apache License 2.0](LICENSE). You can find the full license text in the LICENSE file.
 
-**Note:** AI assistance (e.g., GitHub Copilot) was used to support the development of this project.
+**Note:** AI assistance (e.g., GitHub Copilot, OpenAI Codex) was used to support the development of this project.
+
+## Project uses advanced methods for accesing APIs from external sources and uses a broader authorisation scope in order for the script to run as intended.
