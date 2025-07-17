@@ -26,3 +26,13 @@ test/
 # Local configuration
 
 \*.local.js
+
+# Linters and Formatters config
+
+.prettierrc.json
+.eslintrc.json
+
+# NPM files
+
+package.json
+package-lock.json
