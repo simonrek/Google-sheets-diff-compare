@@ -258,7 +258,7 @@ function getGeminiFeedback(originalText, revisedText) {
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' +
     apiKey;
   const prompt =
-    'Povej v kratkih alinejah glavne razlike in ucilne tocke med naslednjima tekstoma.';
+    'You are an experienced radiologist guiding a resident. Summarize the main differences between the two reports in concise bullet points and highlight key learning points.';
   const payload = {
     contents: [
       {
