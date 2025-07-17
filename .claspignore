@@ -1,15 +1,21 @@
 <!-- @format -->
 
+# Ignore everything by default
+**
+
+# Allow only these files:
+!appsscript.json
+!*.gs
+!*.js
+!*.html
+
 # Git files
 
 .git/
 .gitignore
 
 # Node modules
-
 node_modules/
-
-# Clasp credentials
 
 .clasp.json
 
@@ -30,6 +36,12 @@ test/
 # Linters and Formatters config
 
 .prettierrc.json
+**
+
+!appsscript.json
+!*.gs
+!*.js
+!*.html
 .eslintrc.json
 
 # NPM files
