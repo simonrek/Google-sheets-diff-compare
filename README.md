@@ -29,12 +29,13 @@ This script compares text between two columns in a Google Sheet and highlights t
 1.  **Option 1 (For Developers):** Add the script code to your Google Sheet via `Extensions > Apps Script`. Follow the setup instructions above to push the code using `clasp` or manually copy.
 2.  **Option 2 (For Non-Coders):** Copy the template Google Sheet (link to be provided) which already has the script associated with it.
 3.  Ensure your data is structured according to the columns described above.
-4.  Run the comparison function (details on how to trigger the function, e.g., via a custom menu, should be added here). The script will populate Column C with the differences highlighted.
+4.  Use the "Primerjava izvidov" menu to open the sidebar and start the comparison. The script writes formatted diffs to Column C and Gemini feedback to Column F.
 
 ## Features
 
 - Compares text in Column D (Original) and Column E (Revised).
 - Outputs a rich-text formatted comparison in Column C.
+- Optionally retrieves feedback using Google's Gemini Flash model and writes it to Column F.
 - Uses the `diff-match-patch` library for accurate differencing.
 - Includes extensive logging for debugging and maintenance.
 - Formatted with Prettier for code consistency.

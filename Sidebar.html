@@ -1,0 +1,33 @@
+<!-- @format -->
+
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        padding: 10px;
+      }
+      button {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3>Primerjava izvidov</h3>
+      <p>Zaženi primerjavo besedil in pridobi povratne informacije Geminija.</p>
+      <button onclick="google.script.run.withSuccessHandler(close).runDiff()">
+        Zaženi primerjavo
+      </button>
+    </div>
+    <script>
+      function close() {
+        google.script.host.close();
+      }
+    </script>
+  </body>
+</html>
