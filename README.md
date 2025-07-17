@@ -44,7 +44,8 @@ This script compares text between two columns in a Google Sheet and highlights t
   a short educational summary to Column F. The notes are aimed at helping
   radiology residents understand key changes.
 - Uses the `diff-match-patch` library for accurate differencing.
-- Includes a simple sidebar UI for running the comparison with one click.
+- Modern sidebar UI with live status updates and a field to save your own
+  Gemini API key for feedback generation.
 - Includes extensive logging for debugging and maintenance.
 - Formatted with Prettier for code consistency.
 

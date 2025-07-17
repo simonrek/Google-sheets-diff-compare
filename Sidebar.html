@@ -1,5 +1,4 @@
 <!-- @format -->
-
 <!doctype html>
 <html>
   <head>
@@ -7,27 +6,94 @@
     <style>
       body {
         font-family: Arial, sans-serif;
+        padding: 16px;
       }
-      .container {
-        padding: 10px;
+      h3 {
+        margin-top: 0;
+      }
+      .row {
+        margin-bottom: 12px;
+      }
+      input[type='text'] {
+        width: 100%;
+        padding: 6px 8px;
+        box-sizing: border-box;
       }
       button {
-        margin-top: 10px;
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        background-color: #4285f4;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #357ae8;
+      }
+      #status {
+        margin-top: 12px;
+        background: #f1f3f4;
+        padding: 8px;
+        border-radius: 4px;
+        min-height: 40px;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h3>Primerjava izvidov</h3>
-      <p>Zaženi primerjavo besedil in pridobi povratne informacije Geminija.</p>
-      <button onclick="google.script.run.withSuccessHandler(close).runDiff()">
-        Zaženi primerjavo
-      </button>
+    <h3>Primerjava izvidov</h3>
+    <div class="row">
+      <label for="apiKey">Gemini API ključ</label>
+      <input
+        type="text"
+        id="apiKey"
+        placeholder="Vnesi svoj Gemini API ključ"
+      />
+      <button onclick="saveKey()">Shrani ključ</button>
     </div>
+    <div class="row">
+      <button onclick="startDiff()">Zaženi primerjavo</button>
+    </div>
+    <div id="status"></div>
     <script>
-      function close() {
-        google.script.host.close();
+      function showStatus(msg) {
+        document.getElementById('status').textContent = msg;
       }
+
+      function saveKey() {
+        const key = document.getElementById('apiKey').value.trim();
+        google.script.run
+          .withSuccessHandler(function () {
+            showStatus('API ključ shranjen');
+          })
+          .setGeminiApiKey(key);
+      }
+
+      function startDiff() {
+        showStatus('Zagon primerjave ...');
+        google.script.run
+          .withSuccessHandler(function (count) {
+            showStatus('Primerjava zaključena. Posodobljenih: ' + count);
+          })
+          .processTextComparisons();
+      }
+
+      function pollStatus() {
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            if (msg) showStatus(msg);
+          })
+          .getStatusMessage();
+      }
+      setInterval(pollStatus, 3000);
+
+      // Prefill stored API key on load
+      google.script.run
+        .withSuccessHandler(function (key) {
+          if (key) document.getElementById('apiKey').value = key;
+        })
+        .getGeminiApiKey();
     </script>
   </body>
 </html>

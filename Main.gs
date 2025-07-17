@@ -65,6 +65,7 @@ function processTextComparisons() {
   const FN = 'processTextComparisons';
   Logger.log(`[${FN}] Start`);
   const ui = SpreadsheetApp.getActive();
+  let changedCount = 0;
   try {
     const sheet = SpreadsheetApp.getActiveSheet();
     const lastRow = sheet.getLastRow();
@@ -75,11 +76,9 @@ function processTextComparisons() {
     }
 
     const numRows = lastRow - START_ROW + 1;
-    ui.toast(
-      'Poteka primerjava. Primerjanih bo ' + numRows + ' vrstic',
-      'Primerjam',
-      10
-    );
+    const startMsg = 'Poteka primerjava. Primerjanih bo ' + numRows + ' vrstic';
+    ui.toast(startMsg, 'Primerjam', 10);
+    setStatusMessage(startMsg);
     Logger.log(`[${FN}] Processing ${numRows} rows`);
 
     // Bulk read input values
@@ -89,8 +88,6 @@ function processTextComparisons() {
     const values2 = sheet
       .getRange(`${SOURCE_COLUMN_2}${START_ROW}:${SOURCE_COLUMN_2}${lastRow}`)
       .getDisplayValues();
-
-    let changedCount = 0;
 
     for (let i = 0; i < numRows; i++) {
       const row = START_ROW + i;
@@ -128,22 +125,27 @@ function processTextComparisons() {
           `[${FN}] Row ${row}: skip (exists:${!!existing}, t1:${!!t1}, t2:${!!t2})`
         );
       }
+
+      if ((i + 1) % 5 === 0 || i === numRows - 1) {
+        setStatusMessage(`Obdelanih ${i + 1}/${numRows} vrstic`);
+      }
     }
 
     if (changedCount > 0) {
-      ui.toast(
-        `Primerjava končana – primerjanih je bilo \n${changedCount} \ntekstov.`,
-        'KONČANO',
-        10
-      );
+      const doneMsg = `Primerjava končana – primerjanih je bilo \n${changedCount} \ntekstov.`;
+      ui.toast(doneMsg, 'KONČANO', 10);
+      setStatusMessage(doneMsg);
     } else {
-      ui.toast('Primerjava končana – ni sprememb.', 'Info', 5);
+      const doneMsg = 'Primerjava končana – ni sprememb.';
+      ui.toast(doneMsg, 'Info', 5);
+      setStatusMessage(doneMsg);
     }
   } catch (e) {
     Logger.log(`[${FN}] UNEXPECTED ERROR: ${e.stack}`);
     ui.toast(`Napaka: ${e.message}`, 'Napaka', 15);
   }
   Logger.log(`[${FN}] End`);
+  return changedCount;
 }
 
 /**
@@ -291,4 +293,34 @@ function getGeminiFeedback(originalText, revisedText) {
     Logger.log(`[${FN}] ERROR fetch: ${e.message}`);
     throw e;
   }
+}
+
+/**
+ * Save Gemini API key to script properties.
+ */
+function setGeminiApiKey(key) {
+  PropertiesService.getScriptProperties().setProperty('GEMINI_API_KEY', key);
+}
+
+/**
+ * Retrieve the stored Gemini API key.
+ */
+function getGeminiApiKey() {
+  return (
+    PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY') || ''
+  );
+}
+
+/**
+ * Store a status message for sidebar polling.
+ */
+function setStatusMessage(msg) {
+  PropertiesService.getUserProperties().setProperty('STATUS_MSG', msg);
+}
+
+/**
+ * Get the current status message.
+ */
+function getStatusMessage() {
+  return PropertiesService.getUserProperties().getProperty('STATUS_MSG') || '';
 }
