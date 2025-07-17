@@ -260,7 +260,7 @@ function getGeminiFeedback(originalText, revisedText) {
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' +
     apiKey;
   const prompt =
-    'You are an experienced radiologist guiding a resident. Explain and feedback the main differences between the two reports in concise, short bullet points and highlight key learning points for the resident. Answer in Slovenian, formated clearly and simply as used in google sheets.';
+    'You are an experienced radiologist guiding a resident. Explain and feedback on the main differences between the two reports in concise, short bullet points and highlight key learning points for the resident. Answer in Slovenian, formated clearly and simply.';
   const payload = {
     contents: [
       {
