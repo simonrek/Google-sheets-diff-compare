@@ -14,7 +14,9 @@
       .row {
         margin-bottom: 12px;
       }
-      input[type='text'] {
+      input[type='text'],
+      textarea,
+      select {
         width: 100%;
         padding: 6px 8px;
         box-sizing: border-box;
@@ -39,28 +41,79 @@
         border-radius: 4px;
         min-height: 40px;
       }
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4285f4;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <h3>Primerjava izvidov</h3>
     <div class="row">
       <label for="apiKey">Gemini API ključ</label>
-      <input
-        type="text"
-        id="apiKey"
-        placeholder="Vnesi svoj Gemini API ključ"
-      />
+      <input type="text" id="apiKey" placeholder="Vnesi svoj Gemini API ključ" />
       <button onclick="saveKey()">Shrani ključ</button>
+    </div>
+    <div class="row">
+      <label for="prompt">Osnovni poziv (prompt)</label>
+      <textarea id="prompt" rows="3"></textarea>
+    </div>
+    <div class="row">
+      <label for="question">Dodatno vprašanje/navodilo</label>
+      <input type="text" id="question" placeholder="Npr. poudari učno vrednost" />
+    </div>
+    <div class="row">
+      <label for="length">Želena dolžina odgovora</label>
+      <select id="length">
+        <option value="kratka">Kratka</option>
+        <option value="srednja">Srednja</option>
+        <option value="dolga">Dolga</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="detail">Stopnja podrobnosti</label>
+      <select id="detail">
+        <option value="nizka">Nizka</option>
+        <option value="srednja">Srednja</option>
+        <option value="visoka">Visoka</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="focus">Poudarek odgovora</label>
+      <select id="focus">
+        <option value="glavne razlike">Glavne razlike</option>
+        <option value="spremembe">Spremembe</option>
+        <option value="ucne tocke">Učne točke</option>
+        <option value="vse">Vse</option>
+      </select>
     </div>
     <div class="row">
       <button onclick="startDiff()">Zaženi primerjavo</button>
     </div>
     <div id="status"></div>
+    <div id="spinner" class="spinner hidden"></div>
     <script>
+      let pollInterval;
       function showStatus(msg) {
         document.getElementById('status').textContent = msg;
       }
-
       function saveKey() {
         const key = document.getElementById('apiKey').value.trim();
         google.script.run
@@ -69,16 +122,35 @@
           })
           .setGeminiApiKey(key);
       }
-
+      function startPolling() {
+        stopPolling();
+        pollInterval = setInterval(pollStatus, 3000);
+      }
+      function stopPolling() {
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+      }
       function startDiff() {
         showStatus('Zagon primerjave ...');
+        document.getElementById('spinner').classList.remove('hidden');
+        startPolling();
+        const opts = {
+          prompt: document.getElementById('prompt').value,
+          question: document.getElementById('question').value,
+          length: document.getElementById('length').value,
+          detail: document.getElementById('detail').value,
+          focus: document.getElementById('focus').value,
+        };
         google.script.run
           .withSuccessHandler(function (count) {
             showStatus('Primerjava zaključena. Posodobljenih: ' + count);
+            stopPolling();
+            document.getElementById('spinner').classList.add('hidden');
           })
-          .processTextComparisons();
+          .processTextComparisons(opts);
       }
-
       function pollStatus() {
         google.script.run
           .withSuccessHandler(function (msg) {
@@ -86,14 +158,17 @@
           })
           .getStatusMessage();
       }
-      setInterval(pollStatus, 3000);
-
-      // Prefill stored API key on load
+      // Prefill stored API key and prompt on load
       google.script.run
         .withSuccessHandler(function (key) {
           if (key) document.getElementById('apiKey').value = key;
         })
         .getGeminiApiKey();
+      google.script.run
+        .withSuccessHandler(function (prompt) {
+          if (prompt) document.getElementById('prompt').value = prompt;
+        })
+        .getUserPrompt();
     </script>
   </body>
 </html>

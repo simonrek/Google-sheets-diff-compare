@@ -32,6 +32,10 @@ const START_ROW = 2; //Ne spreminjaj, določi začetek delovanja programa v drug
 const MENU_NAME = 'Primerjava izvidov';
 const MENU_FUNCTION = 'processTextComparisons';
 
+// Privzeti poziv za Gemini
+const DEFAULT_PROMPT =
+  'Deluješ kot izkušen radiolog in specializantu na kratko razložiš glavne razlike med izvidoma. Odgovori v točkah in v slovenščini.';
+
 /**
  * Doda meni za ročni zagon primerjave.
  */
@@ -103,7 +107,10 @@ function processTextComparisons() {
           const richText = createRichTextDiff(t1, t2);
           outCell.setRichTextValue(richText);
           try {
-            const feedback = getGeminiFeedback(t1, t2);
+            setStatusMessage(
+              `Pridobivam povratno informacijo ${i + 1}/${numRows}`
+            );
+            const feedback = getGeminiFeedback(t1, t2, feedbackOpts);
             feedbackCell.setValue(feedback);
           } catch (feedbackErr) {
             Logger.log(
@@ -126,9 +133,10 @@ function processTextComparisons() {
         );
       }
 
-      if ((i + 1) % 5 === 0 || i === numRows - 1) {
-        setStatusMessage(`Obdelanih ${i + 1}/${numRows} vrstic`);
-      }
+      const remaining = numRows - (i + 1);
+      setStatusMessage(
+        `Obdelanih ${i + 1}/${numRows} - preskočenih ${skipped} - preostanek ${remaining}`
+      );
     }
 
     if (changedCount > 0) {
@@ -145,6 +153,8 @@ function processTextComparisons() {
     ui.toast(`Napaka: ${e.message}`, 'Napaka', 15);
   }
   Logger.log(`[${FN}] End`);
+  Utilities.sleep(500);
+  setStatusMessage('');
   return changedCount;
 }
 
@@ -246,10 +256,8 @@ function createRichTextDiff(text1, text2) {
   return builder.build();
 }
 
-/**
- * Retrieve feedback from the Gemini Flash model comparing two texts.
- */
-function getGeminiFeedback(originalText, revisedText) {
+function getGeminiFeedback(originalText, revisedText, settings) {
+  settings = settings || {};
   const FN = 'getGeminiFeedback';
   const apiKey =
     PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
@@ -259,8 +267,21 @@ function getGeminiFeedback(originalText, revisedText) {
   const url =
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' +
     apiKey;
+  const basePrompt = settings.prompt || DEFAULT_PROMPT;
+  const detail = settings.detail || 'nizka';
+  const length = settings.length || 'kratka';
+  const focus = settings.focus || 'glavne razlike';
+  const question = settings.question ? '\nVprašanje: ' + settings.question : '';
   const prompt =
-    'You are an experienced radiologist guiding a resident. Explain and feedback on the main differences between the two reports in concise, short bullet points and highlight key learning points for the resident. Answer in Slovenian, formated clearly and simply.';
+    basePrompt +
+    '\nPodrobnost: ' +
+    detail +
+    '. Dolžina: ' +
+    length +
+    '. Poudarek: ' +
+    focus +
+    '.' +
+    question;
   const payload = {
     contents: [
       {
@@ -308,6 +329,23 @@ function setGeminiApiKey(key) {
 function getGeminiApiKey() {
   return (
     PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY') || ''
+  );
+}
+
+/**
+ * Shrani uporabnikov poziv za Gemini.
+ */
+function setUserPrompt(prompt) {
+  PropertiesService.getUserProperties().setProperty('USER_PROMPT', prompt);
+}
+
+/**
+ * Vrne shranjeni poziv ali privzetega.
+ */
+function getUserPrompt() {
+  return (
+    PropertiesService.getUserProperties().getProperty('USER_PROMPT') ||
+    DEFAULT_PROMPT
   );
 }
 
