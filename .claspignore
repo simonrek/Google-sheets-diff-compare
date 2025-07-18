@@ -1,50 +1,23 @@
-<!-- @format -->
-
 # Ignore everything by default
-**
+**/**
 
-# Allow only these files:
+# Allow only Apps Script files and manifest (multimatch style)
 !appsscript.json
-!*.gs
-!*.js
-!*.html
+!**/*.gs
+!**/*.js
+!**/*.ts
+!**/*.html
 
-# Git files
-
-.git/
-.gitignore
-
-# Node modules
-node_modules/
-
-.clasp.json
-
-# README and other docs
-
-README.md
-docs/
-
-# Test files
-
-test/
-\*.test.js
-
-# Local configuration
-
-\*.local.js
-
-# Linters and Formatters config
-
-.prettierrc.json
-**
-
-!appsscript.json
-!*.gs
-!*.js
-!*.html
-.eslintrc.json
-
-# NPM files
-
+# Explicitly ignore these even if they match above
+node_modules/**
 package.json
 package-lock.json
+.eslintrc.json
+eslint.config.js
+.prettierrc.json
+.git/
+.gitignore
+test/**
+README.md
+docs/**
+.clasp.json
