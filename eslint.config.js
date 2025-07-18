@@ -17,6 +17,7 @@ export default [
         ...googleappsscript.environments.googleappsscript.globals,
         window: 'readonly',
         document: 'readonly',
+        diff_match_patch: 'readonly',
       },
     },
     plugins: {
@@ -26,6 +27,7 @@ export default [
     rules: {
       ...prettier.rules,
       'prettier/prettier': 'warn',
+      'no-undef': 'error',
     },
   },
 ];

@@ -70,6 +70,8 @@ function processTextComparisons() {
   Logger.log(`[${FN}] Start`);
   const ui = SpreadsheetApp.getActive();
   let changedCount = 0;
+  let skipped = 0;
+  let feedbackOpts = {};
   try {
     const sheet = SpreadsheetApp.getActiveSheet();
     const lastRow = sheet.getLastRow();
@@ -131,6 +133,7 @@ function processTextComparisons() {
         Logger.log(
           `[${FN}] Row ${row}: skip (exists:${!!existing}, t1:${!!t1}, t2:${!!t2})`
         );
+        skipped++;
       }
 
       const remaining = numRows - (i + 1);
