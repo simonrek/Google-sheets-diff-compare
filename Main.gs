@@ -34,7 +34,7 @@ const MENU_FUNCTION = 'processTextComparisons';
 
 // Privzeti poziv za Gemini
 const DEFAULT_PROMPT =
-  'Deluješ kot izkušen radiolog in specializantu na kratko razložiš glavne razlike med izvidoma. Odgovori v točkah in v slovenščini.';
+  'Deluješ kot izkušen radiolog in mentor, ki poda odziv na razlike med prvotnim in popravljenim radiološkim izvidom, ki si ga popravil. Specializantu povzemi samo najpomembnejše vsebinske razlike med obema izvidoma, ali obstajajo klinično pomembne razlike v interpretaciji ugotovitev (npr. ocena resnosti sprememb ali predlagani nadaljnji ukrepi)? Opozori na morebitne kritične napake ali pomanjkljivosti, ki jih opaziš pri prvotnem izvidu. Na koncu poudari kaj je bilo dobro. Uporabi natančne radiološke izraze, razloži razumljivo in pedagoško. Odgovori v slovenščini.';
 
 /**
  * Doda meni za ročni zagon primerjave.
@@ -65,13 +65,13 @@ function runDiff() {
  * Reads source columns in bulk, generates diff for each row, and writes
  * each result individually to preserve styling behavior.
  */
-function processTextComparisons() {
+function processTextComparisons(opts) {
   const FN = 'processTextComparisons';
   Logger.log(`[${FN}] Start`);
   const ui = SpreadsheetApp.getActive();
   let changedCount = 0;
   let skipped = 0;
-  let feedbackOpts = {};
+  let feedbackOpts = opts || {};
   try {
     const sheet = SpreadsheetApp.getActiveSheet();
     const lastRow = sheet.getLastRow();
@@ -277,11 +277,11 @@ function getGeminiFeedback(originalText, revisedText, settings) {
   const question = settings.question ? '\nVprašanje: ' + settings.question : '';
   const prompt =
     basePrompt +
-    '\nPodrobnost: ' +
+    '\nStopnja podrobnosti odgovora: ' +
     detail +
-    '. Dolžina: ' +
+    '. Dolžina odgovora: ' +
     length +
-    '. Poudarek: ' +
+    '. Poudarek daj na: ' +
     focus +
     '.' +
     question;
