@@ -284,7 +284,7 @@ function getGeminiFeedback(originalText, revisedText, settings) {
     length +
     '. Narava povratne informacije naj bo ' +
     focus +
-    '. V odgovoru so dovoljene samo alineje in številčenje, brez */& in podobnih znakov.' +
+    '. Odgovori v slovenščini. V odgovoru so dovoljene samo alineje in številčenje, brez */& in podobnih znakov.' +
     question;
   const payload = {
     contents: [
@@ -339,7 +339,7 @@ function getMistralFeedback(originalText, revisedText, settings) {
     length +
     '. Narava povratne informacije naj bo ' +
     focus +
-    '. V odgovoru so dovoljene samo alineje in številčenje, brez */& in podobnih znakov.' +
+    '. Odgovori v slovenščini. V odgovoru so dovoljene samo alineje in številčenje, brez */& in podobnih znakov.' +
     question;
   const payload = {
     model: 'mistral-large-latest',
