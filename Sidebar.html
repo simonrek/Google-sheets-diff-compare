@@ -103,14 +103,16 @@
     <div class="row">
       <label for="length">Želena dolžina odgovora</label>
       <select id="length">
-        <option value="kratka do 250 znakov">Kratka</option>
-        <option value="dolga do 1000 znakov">Dolga</option>
+        <option value="do 150 znakov">Kratka</option>
+        <option value="do 600 znakov">Dolga</option>
       </select>
     </div>
     <div class="row">
       <label for="focus">Narava povratne informacije</label>
       <select id="focus">
-        <option value="primerjava ključnih razlik izvidov">Primerjava</option>
+        <option value="kratka in jedrnata primerjava ključnih razlik izvidov">
+          Primerjava
+        </option>
         <option value="najpomembenjše poučne razlike">
           Samo glavne razlike
         </option>
@@ -148,7 +150,11 @@
       }
       function savePrompt() {
         const p = document.getElementById('prompt').value;
-        google.script.run.setUserPrompt(p);
+        google.script.run
+          .withSuccessHandler(function () {
+            showStatus('Nov poziv/prompt shranjen');
+          })
+          .setUserPrompt(p);
       }
       function startPolling() {
         stopPolling();

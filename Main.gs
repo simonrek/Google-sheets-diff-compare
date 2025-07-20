@@ -284,7 +284,7 @@ function getGeminiFeedback(originalText, revisedText, settings) {
     length +
     '. Narava povratne informacije naj bo ' +
     focus +
-    '. Odgovor naj bo brez posebnih znakov, brez krepkega besedila. Dovoljene so alineje in številčenje.' +
+    '. V odgovoru so dovoljene samo alineje in številčenje, brez */& in podobnih znakov.' +
     question;
   const payload = {
     contents: [
@@ -293,7 +293,7 @@ function getGeminiFeedback(originalText, revisedText, settings) {
           {
             text:
               prompt +
-              '\n\nOriginal:\n' +
+              '\n\nOriginalni izvid:\n' +
               originalText +
               '\n\nPopravljen:\n' +
               revisedText,
@@ -335,11 +335,11 @@ function getMistralFeedback(originalText, revisedText, settings) {
   const question = settings.question ? '\nVprašanje: ' + settings.question : '';
   const prompt =
     basePrompt +
-    '. Dolžina odgovora: ' +
+    '. Dolžina odgovora naj bo ' +
     length +
-    '. Narava povratne informacije: ' +
+    '. Narava povratne informacije naj bo ' +
     focus +
-    '.' +
+    '. V odgovoru so dovoljene samo alineje in številčenje, brez */& in podobnih znakov.' +
     question;
   const payload = {
     model: 'mistral-large-latest',
