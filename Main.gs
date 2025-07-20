@@ -280,11 +280,11 @@ function getGeminiFeedback(originalText, revisedText, settings) {
   const question = settings.question ? '\nVprašanje: ' + settings.question : '';
   const prompt =
     basePrompt +
-    '. Dolžina odgovora: ' +
+    '. Dolžina odgovora naj bo ' +
     length +
-    '. Narava povratne informacije: ' +
+    '. Narava povratne informacije naj bo ' +
     focus +
-    '.' +
+    '. Odgovor naj bo brez posebnih znakov, brez krepkega besedila. Dovoljene so alineje in številčenje.' +
     question;
   const payload = {
     contents: [
