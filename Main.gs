@@ -72,6 +72,7 @@ function processTextComparisons(opts) {
   let changedCount = 0;
   let skipped = 0;
   let feedbackOpts = opts || {};
+  const model = feedbackOpts.model || 'gemini';
   try {
     const sheet = SpreadsheetApp.getActiveSheet();
     const lastRow = sheet.getLastRow();
@@ -112,7 +113,10 @@ function processTextComparisons(opts) {
             setStatusMessage(
               `Pridobivam povratno informacijo ${i + 1}/${numRows}`
             );
-            const feedback = getGeminiFeedback(t1, t2, feedbackOpts);
+            const feedback =
+              model === 'mistral'
+                ? getMistralFeedback(t1, t2, feedbackOpts)
+                : getGeminiFeedback(t1, t2, feedbackOpts);
             feedbackCell.setValue(feedback);
           } catch (feedbackErr) {
             Logger.log(
@@ -271,17 +275,14 @@ function getGeminiFeedback(originalText, revisedText, settings) {
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' +
     apiKey;
   const basePrompt = settings.prompt || DEFAULT_PROMPT;
-  const detail = settings.detail || 'nizka';
   const length = settings.length || 'kratka';
-  const focus = settings.focus || 'glavne razlike';
+  const focus = settings.focus || 'primerjava';
   const question = settings.question ? '\nVprašanje: ' + settings.question : '';
   const prompt =
     basePrompt +
-    '\nStopnja podrobnosti odgovora: ' +
-    detail +
     '. Dolžina odgovora: ' +
     length +
-    '. Poudarek daj na: ' +
+    '. Narava povratne informacije: ' +
     focus +
     '.' +
     question;
@@ -319,6 +320,57 @@ function getGeminiFeedback(originalText, revisedText, settings) {
   }
 }
 
+function getMistralFeedback(originalText, revisedText, settings) {
+  settings = settings || {};
+  const FN = 'getMistralFeedback';
+  const apiKey =
+    PropertiesService.getScriptProperties().getProperty('MISTRAL_API_KEY');
+  if (!apiKey) {
+    throw new Error('MISTRAL_API_KEY ni nastavljen.');
+  }
+  const url = 'https://api.mistral.ai/v1/chat/completions';
+  const basePrompt = settings.prompt || DEFAULT_PROMPT;
+  const length = settings.length || 'kratka';
+  const focus = settings.focus || 'primerjava';
+  const question = settings.question ? '\nVprašanje: ' + settings.question : '';
+  const prompt =
+    basePrompt +
+    '. Dolžina odgovora: ' +
+    length +
+    '. Narava povratne informacije: ' +
+    focus +
+    '.' +
+    question;
+  const payload = {
+    model: 'mistral-large-latest',
+    messages: [
+      { role: 'system', content: prompt },
+      {
+        role: 'user',
+        content:
+          'Original:\n' + originalText + '\n\nPopravljen:\n' + revisedText,
+      },
+    ],
+  };
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + apiKey },
+  };
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    const choice = data.choices && data.choices[0];
+    const msg = choice && choice.message;
+    return msg ? msg.content : '';
+  } catch (e) {
+    Logger.log(`[${FN}] ERROR fetch: ${e.message}`);
+    throw e;
+  }
+}
+
 /**
  * Save Gemini API key to script properties.
  */
@@ -332,6 +384,16 @@ function setGeminiApiKey(key) {
 function getGeminiApiKey() {
   return (
     PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY') || ''
+  );
+}
+
+function setMistralApiKey(key) {
+  PropertiesService.getScriptProperties().setProperty('MISTRAL_API_KEY', key);
+}
+
+function getMistralApiKey() {
+  return (
+    PropertiesService.getScriptProperties().getProperty('MISTRAL_API_KEY') || ''
   );
 }
 

@@ -67,41 +67,53 @@
   <body>
     <h3>Primerjava izvidov</h3>
     <div class="row">
-      <label for="apiKey">Gemini API ključ</label>
-      <input type="text" id="apiKey" placeholder="Vnesi svoj Gemini API ključ" />
-      <button onclick="saveKey()">Shrani ključ</button>
+      <label for="geminiKey">Gemini API ključ</label>
+      <input type="text" id="geminiKey" placeholder="Vnesi Gemini API ključ" />
+      <button onclick="saveGeminiKey()">Shrani ključ</button>
+    </div>
+    <div class="row">
+      <label for="mistralKey">Mistral API ključ</label>
+      <input
+        type="text"
+        id="mistralKey"
+        placeholder="Vnesi Mistral API ključ"
+      />
+      <button onclick="saveMistralKey()">Shrani ključ</button>
+    </div>
+    <div class="row">
+      <label for="model">Izberi model</label>
+      <select id="model">
+        <option value="gemini">Gemini</option>
+        <option value="mistral">Mistral</option>
+      </select>
     </div>
     <div class="row">
       <label for="prompt">Osnovni poziv (prompt)</label>
       <textarea id="prompt" rows="3"></textarea>
+      <button onclick="savePrompt()">Shrani poziv</button>
     </div>
     <div class="row">
       <label for="question">Dodatno vprašanje/navodilo</label>
-      <input type="text" id="question" placeholder="Npr. poudari učno vrednost" />
+      <input
+        type="text"
+        id="question"
+        placeholder="Npr. poudari učno vrednost"
+      />
     </div>
     <div class="row">
       <label for="length">Želena dolžina odgovora</label>
       <select id="length">
         <option value="kratka">Kratka</option>
-        <option value="srednja">Srednja</option>
         <option value="dolga">Dolga</option>
       </select>
     </div>
     <div class="row">
-      <label for="detail">Stopnja podrobnosti</label>
-      <select id="detail">
-        <option value="nizka">Nizka</option>
-        <option value="srednja">Srednja</option>
-        <option value="visoka">Visoka</option>
-      </select>
-    </div>
-    <div class="row">
-      <label for="focus">Poudarek odgovora</label>
+      <label for="focus">Narava povratne informacije</label>
       <select id="focus">
-        <option value="glavne razlike">Glavne razlike</option>
-        <option value="spremembe">Spremembe</option>
-        <option value="ucne tocke">Učne točke</option>
-        <option value="vse">Vse</option>
+        <option value="primerjava">Primerjava</option>
+        <option value="glavne razlike">Samo glavne razlike</option>
+        <option value="ucne tocke">Kritične učne točke</option>
+        <option value="celoten feedback">Celoten feedback</option>
       </select>
     </div>
     <div class="row">
@@ -114,13 +126,25 @@
       function showStatus(msg) {
         document.getElementById('status').textContent = msg;
       }
-      function saveKey() {
-        const key = document.getElementById('apiKey').value.trim();
+      function saveGeminiKey() {
+        const key = document.getElementById('geminiKey').value.trim();
         google.script.run
           .withSuccessHandler(function () {
-            showStatus('API ključ shranjen');
+            showStatus('Gemini ključ shranjen');
           })
           .setGeminiApiKey(key);
+      }
+      function saveMistralKey() {
+        const key = document.getElementById('mistralKey').value.trim();
+        google.script.run
+          .withSuccessHandler(function () {
+            showStatus('Mistral ključ shranjen');
+          })
+          .setMistralApiKey(key);
+      }
+      function savePrompt() {
+        const p = document.getElementById('prompt').value;
+        google.script.run.setUserPrompt(p);
       }
       function startPolling() {
         stopPolling();
@@ -140,8 +164,8 @@
           prompt: document.getElementById('prompt').value,
           question: document.getElementById('question').value,
           length: document.getElementById('length').value,
-          detail: document.getElementById('detail').value,
           focus: document.getElementById('focus').value,
+          model: document.getElementById('model').value,
         };
         google.script.run
           .withSuccessHandler(function (count) {
@@ -161,9 +185,14 @@
       // Prefill stored API key and prompt on load
       google.script.run
         .withSuccessHandler(function (key) {
-          if (key) document.getElementById('apiKey').value = key;
+          if (key) document.getElementById('geminiKey').value = key;
         })
         .getGeminiApiKey();
+      google.script.run
+        .withSuccessHandler(function (key) {
+          if (key) document.getElementById('mistralKey').value = key;
+        })
+        .getMistralApiKey();
       google.script.run
         .withSuccessHandler(function (prompt) {
           if (prompt) document.getElementById('prompt').value = prompt;
